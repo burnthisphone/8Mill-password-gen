@@ -1,0 +1,234 @@
+import random
+import string
+import os
+import itertools
+
+def generate_single_words():
+    # Base word lists (nouns, adjectives, verbs)
+    nouns = [
+        "dog", "cat", "fish", "bird", "tree", "river", "moon", "star", "cloud", "sun",
+        "house", "car", "book", "pen", "sky", "hill", "lake", "wind", "snow", "rain",
+        "apple", "banana", "orange", "grape", "lemon", "peach", "berry", "cherry", "kiwi", "mango",
+        "table", "chair", "door", "window", "flower", "grass", "stone", "rock", "sand", "sea",
+        "mountain", "valley", "forest", "desert", "island", "ocean", "pond", "stream", "wave", "tide",
+        "horse", "lion", "tiger", "bear", "wolf", "fox", "deer", "rabbit", "mouse", "snake",
+        "eagle", "owl", "hawk", "crow", "sparrow", "parrot", "penguin", "dolphin", "whale", "shark",
+        "city", "town", "village", "road", "bridge", "park", "garden", "field", "farm", "barn",
+        "school", "library", "church", "temple", "castle", "palace", "tower", "wall", "gate", "path",
+        "boat", "ship", "plane", "train", "bus", "bike", "shoe", "hat", "shirt", "coat",
+        "ring", "watch", "clock", "lamp", "key", "lock", "map", "globe", "starfish", "coral",
+        "deer", "zebra", "giraffe", "elephant", "rhino", "hippo", "monkey", "panda", "koala", "cheetah"
+    ]
+    
+    adjectives = [
+        "happy", "sad", "brave", "calm", "wild", "cool", "warm", "cold", "bright", "dark",
+        "quick", "slow", "big", "small", "tall", "short", "funny", "kind", "wise", "bold",
+        "sweet", "sour", "bitter", "salty", "fresh", "old", "new", "young", "ancient", "modern",
+        "red", "blue", "green", "yellow", "purple", "orange", "black", "white", "gray", "pink",
+        "shiny", "dull", "smooth", "rough", "soft", "hard", "loud", "quiet", "strong", "weak",
+        "fast", "lazy", "smart", "clever", "gentle", "fierce", "pretty", "ugly", "rich", "poor",
+        "hot", "icy", "dry", "wet", "clean", "dirty", "sharp", "blunt", "heavy", "light",
+        "clear", "foggy", "stormy", "sunny", "rainy", "windy", "frosty", "misty", "glad", "grim",
+        "cozy", "crisp", "lush", "sparse", "vivid", "pale", "deep", "shallow", "broad", "narrow"
+    ]
+    
+    verbs = [
+        "love", "hate", "run", "jump", "sing", "dance", "swim", "fly", "read", "write",
+        "play", "eat", "sleep", "dream", "think", "build", "grow", "shine", "laugh", "cry",
+        "walk", "climb", "fall", "ride", "drive", "paint", "draw", "cook", "bake", "drink",
+        "listen", "speak", "talk", "whisper", "shout", "scream", "wait", "watch", "learn", "teach",
+        "find", "lose", "seek", "hide", "catch", "throw", "kick", "hit", "pull", "push",
+        "open", "close", "start", "stop", "begin", "end", "create", "destroy", "fix", "break",
+        "jump", "skip", "hop", "crawl", "sprint", "wander", "chase", "follow", "lead", "guide",
+        "search", "discover", "explore", "rest", "relax", "work", "fight", "smile", "frown", "blink"
+    ]
+    
+    # Combine base words
+    single_words = nouns + adjectives + verbs
+    
+    # Pad with numbered variations to reach 1000
+    i = 0
+    while len(single_words) < 1000:
+        single_words.append(f"{random.choice(nouns + adjectives + verbs)}{i}")
+        i += 1
+    
+    # Ensure uniqueness and return exactly 1000
+    single_words = list(set(single_words))[:1000]
+    random.shuffle(single_words)
+    return single_words
+
+def generate_phrases():
+    # Base words for phrases
+    adjectives = [
+        "happy", "sad", "brave", "calm", "wild", "cool", "warm", "cold", "bright", "dark",
+        "quick", "slow", "big", "small", "tall", "short", "funny", "kind", "wise", "bold",
+        "sweet", "sour", "bitter", "salty", "fresh", "old", "new", "young", "ancient", "modern"
+    ]
+    verbs = [
+        "love", "hate", "run", "jump", "sing", "dance", "swim", "fly", "read", "write",
+        "play", "eat", "sleep", "dream", "think", "build", "grow", "shine", "laugh", "cry"
+    ]
+    nouns = [
+        "dog", "cat", "fish", "bird", "tree", "river", "moon", "star", "cloud", "sun",
+        "house", "car", "book", "pen", "sky", "hill", "lake", "wind", "snow", "rain"
+    ]
+    
+    phrases = []
+    
+    # Two-word phrases
+    for adj in adjectives:
+        for noun in nouns:
+            phrases.append(adj + noun)
+            phrases.append(noun + adj)
+    for verb in verbs:
+        for noun in nouns:
+            phrases.append(verb + noun)
+    
+    # Three-word phrases
+    for adj in adjectives:
+        for verb in verbs:
+            for noun in nouns:
+                phrases.append(f"i{verb}{noun}")
+                phrases.append(f"{adj}{noun}{verb}")
+    
+    # "my" and "the" phrases
+    for noun in nouns:
+        phrases.append(f"my{noun}")
+        phrases.append(f"the{noun}")
+    
+    # Pad with variations
+    i = 0
+    while len(phrases) < 1000:
+        phrases.append(f"{random.choice(adjectives)}{random.choice(nouns)}{i}")
+        i += 1
+    
+    # Ensure uniqueness and return exactly 1000
+    phrases = list(set(phrases))[:1000]
+    random.shuffle(phrases)
+    return phrases
+
+def generate_number_patterns():
+    number_patterns = []
+    
+    # Random digit sequences (2-4 digits)
+    for length in range(2, 5):
+        for _ in range(200):
+            pattern = ''.join(random.choice(string.digits) for _ in range(length))
+            number_patterns.append(pattern)
+    
+    # Four-digit years (1900-2025)
+    for year in range(1900, 2026):
+        number_patterns.append(str(year))
+    
+    # Repeated two-digit numbers
+    for num in range(10, 100):
+        number_patterns.append(str(num) * 2)
+    
+    # Repeated single digits
+    for digit in range(1, 10):
+        for length in range(2, 5):
+            number_patterns.append(str(digit) * length)
+    
+    # Incremental sequences
+    for start in range(0, 8):
+        for length in range(2, 5):
+            seq = ''.join(str((start + i) % 10) for i in range(length))
+            number_patterns.append(seq)
+    
+    # Pad with random 3-5 digit numbers
+    while len(number_patterns) < 1000:
+        length = random.randint(3, 5)
+        pattern = ''.join(random.choice(string.digits) for _ in range(length))
+        number_patterns.append(pattern)
+    
+    # Ensure uniqueness and return exactly 1000
+    number_patterns = list(set(number_patterns))[:1000]
+    random.shuffle(number_patterns)
+    return number_patterns
+
+def generate_all_passwords(single_words, phrases, number_patterns, min_length=8, include_number=True, include_special=True):
+    passwords = []
+    special_chars = list(string.punctuation)
+    
+    # Combine words and phrases
+    text_list = single_words + phrases
+    
+    # Generate all combinations
+    for text, number in itertools.product(text_list, number_patterns):
+        # Non-capitalized, no special character
+        pwd = text
+        if include_number:
+            pwd += number
+        if len(pwd) >= min_length:
+            passwords.append(pwd)
+        
+        # Non-capitalized, with special character
+        if include_special:
+            for char in special_chars:
+                pwd_special = text + number + char
+                if len(pwd_special) >= min_length:
+                    passwords.append(pwd_special)
+        
+        # Capitalized, no special character
+        pwd_cap = text.capitalize()
+        if include_number:
+            pwd_cap += number
+        if len(pwd_cap) >= min_length:
+            passwords.append(pwd_cap)
+        
+        # Capitalized, with special character
+        if include_special:
+            for char in special_chars:
+                pwd_cap_special = text.capitalize() + number + char
+                if len(pwd_cap_special) >= min_length:
+                    passwords.append(pwd_cap_special)
+    
+    # Ensure minimum length (pad with lowercase letters if needed)
+    final_passwords = []
+    for pwd in passwords:
+        while len(pwd) < min_length:
+            pwd += random.choice(string.ascii_lowercase)
+        final_passwords.append(pwd)
+    
+    return final_passwords
+
+def save_passwords_to_file(passwords, filename="passwords.txt"):
+    try:
+        with open(filename, 'w', encoding='utf-8') as file:
+            for password in passwords:
+                file.write(password + '\n')
+        return f"Passwords saved to {filename} ({len(passwords)} passwords)"
+    except Exception as e:
+        return f"Error saving to file: {str(e)}"
+
+# Main execution
+if __name__ == "__main__":
+    print("Generating word lists and number patterns...")
+    single_words = generate_single_words()
+    phrases = generate_phrases()
+    number_patterns = generate_number_patterns()
+    
+    print(f"Generated {len(single_words)} single words")
+    print(f"Generated {len(phrases)} phrases")
+    print(f"Generated {len(number_patterns)} number patterns")
+    
+    print("\nGenerating all possible passwords (this may take a few minutes)...")
+    passwords = generate_all_passwords(
+        single_words, 
+        phrases, 
+        number_patterns, 
+        min_length=8, 
+        include_number=True, 
+        include_special=True
+    )
+    
+    print(f"\nGenerated {len(passwords)} passwords")
+    
+    # Print first 10 passwords for verification
+    print("\nFirst 10 Passwords (sample):")
+    for pwd in passwords[:10]:
+        print(pwd)
+    
+    # Save all passwords to a text file
+    result = save_passwords_to_file(passwords)
+    print(f"\n{result}")
