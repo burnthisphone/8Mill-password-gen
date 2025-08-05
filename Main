@@ -1,10 +1,28 @@
 import random
 import string
 import os
+import tkinter as tk
+from tkinter import messagebox, ttk, filedialog
 import itertools
+from math import log2
+import threading
+import json
+import csv
+import zipfile
+import pyperclip
 
-def generate_single_words():
-    # Base word lists (nouns, adjectives, verbs)
+def generate_single_words(custom_file=None):
+    if custom_file:
+        try:
+            with open(custom_file, 'r', encoding='utf-8') as f:
+                words = [line.strip() for line in f if line.strip()]
+                words = list(set(words))[:1000]
+                random.shuffle(words)
+                return words if len(words) >= 1000 else words + generate_single_words()[:1000-len(words)]
+        except Exception as e:
+            print(f"Error loading custom file: {e}")
+            return generate_single_words()
+    
     nouns = [
         "dog", "cat", "fish", "bird", "tree", "river", "moon", "star", "cloud", "sun",
         "house", "car", "book", "pen", "sky", "hill", "lake", "wind", "snow", "rain",
@@ -15,9 +33,7 @@ def generate_single_words():
         "eagle", "owl", "hawk", "crow", "sparrow", "parrot", "penguin", "dolphin", "whale", "shark",
         "city", "town", "village", "road", "bridge", "park", "garden", "field", "farm", "barn",
         "school", "library", "church", "temple", "castle", "palace", "tower", "wall", "gate", "path",
-        "boat", "ship", "plane", "train", "bus", "bike", "shoe", "hat", "shirt", "coat",
-        "ring", "watch", "clock", "lamp", "key", "lock", "map", "globe", "starfish", "coral",
-        "deer", "zebra", "giraffe", "elephant", "rhino", "hippo", "monkey", "panda", "koala", "cheetah"
+        "boat", "ship", "plane", "train", "bus", "bike", "shoe", "hat", "shirt", "coat"
     ]
     
     adjectives = [
@@ -27,9 +43,7 @@ def generate_single_words():
         "red", "blue", "green", "yellow", "purple", "orange", "black", "white", "gray", "pink",
         "shiny", "dull", "smooth", "rough", "soft", "hard", "loud", "quiet", "strong", "weak",
         "fast", "lazy", "smart", "clever", "gentle", "fierce", "pretty", "ugly", "rich", "poor",
-        "hot", "icy", "dry", "wet", "clean", "dirty", "sharp", "blunt", "heavy", "light",
-        "clear", "foggy", "stormy", "sunny", "rainy", "windy", "frosty", "misty", "glad", "grim",
-        "cozy", "crisp", "lush", "sparse", "vivid", "pale", "deep", "shallow", "broad", "narrow"
+        "hot", "icy", "dry", "wet", "clean", "dirty", "sharp", "blunt", "heavy", "light"
     ]
     
     verbs = [
@@ -37,169 +51,486 @@ def generate_single_words():
         "play", "eat", "sleep", "dream", "think", "build", "grow", "shine", "laugh", "cry",
         "walk", "climb", "fall", "ride", "drive", "paint", "draw", "cook", "bake", "drink",
         "listen", "speak", "talk", "whisper", "shout", "scream", "wait", "watch", "learn", "teach",
-        "find", "lose", "seek", "hide", "catch", "throw", "kick", "hit", "pull", "push",
-        "open", "close", "start", "stop", "begin", "end", "create", "destroy", "fix", "break",
-        "jump", "skip", "hop", "crawl", "sprint", "wander", "chase", "follow", "lead", "guide",
-        "search", "discover", "explore", "rest", "relax", "work", "fight", "smile", "frown", "blink"
+        "find", "lose", "seek", "hide", "catch", "throw", "kick", "hit", "pull", "push"
     ]
     
-    # Combine base words
-    single_words = nouns + adjectives + verbs
+    colors = [
+        "crimson", "scarlet", "indigo", "violet", "emerald", "sapphire", "ruby", "amber", "gold", "silver"
+    ]
     
-    # Pad with numbered variations to reach 1000
+    foods = [
+        "pizza", "burger", "sushi", "pasta", "taco", "salad", "soup", "cake", "pie", "cookie"
+    ]
+    
+    emotions = [
+        "joy", "anger", "fear", "hope", "pride", "shame", "trust", "doubt", "bliss", "grief"
+    ]
+    
+    single_words = nouns + adjectives + verbs + colors + foods + emotions
+    
     i = 0
     while len(single_words) < 1000:
         single_words.append(f"{random.choice(nouns + adjectives + verbs)}{i}")
         i += 1
     
-    # Ensure uniqueness and return exactly 1000
     single_words = list(set(single_words))[:1000]
     random.shuffle(single_words)
     return single_words
 
-def generate_phrases():
-    # Base words for phrases
+def generate_phrases(custom_file=None):
+    if custom_file:
+        try:
+            with open(custom_file, 'r', encoding='utf-8') as f:
+                phrases = [line.strip() for line in f if line.strip()]
+                phrases = list(set(phrases))[:1000]
+                random.shuffle(phrases)
+                return phrases if len(phrases) >= 1000 else phrases + generate_phrases()[:1000-len(phrases)]
+        except Exception as e:
+            print(f"Error loading custom file: {e}")
+            return generate_phrases()
+    
     adjectives = [
         "happy", "sad", "brave", "calm", "wild", "cool", "warm", "cold", "bright", "dark",
-        "quick", "slow", "big", "small", "tall", "short", "funny", "kind", "wise", "bold",
-        "sweet", "sour", "bitter", "salty", "fresh", "old", "new", "young", "ancient", "modern"
+        "quick", "slow", "big", "small", "tall", "short", "funny", "kind", "wise", "bold"
     ]
     verbs = [
-        "love", "hate", "run", "jump", "sing", "dance", "swim", "fly", "read", "write",
-        "play", "eat", "sleep", "dream", "think", "build", "grow", "shine", "laugh", "cry"
+        "love", "hate", "run", "jump", "sing", "dance", "swim", "fly", "read", "write"
     ]
     nouns = [
-        "dog", "cat", "fish", "bird", "tree", "river", "moon", "star", "cloud", "sun",
-        "house", "car", "book", "pen", "sky", "hill", "lake", "wind", "snow", "rain"
+        "dog", "cat", "fish", "bird", "tree", "river", "moon", "star", "cloud", "sun"
     ]
+    colors = ["red", "blue", "green", "yellow", "purple"]
+    foods = ["pizza", "cake", "sushi", "taco", "pie"]
     
     phrases = []
     
-    # Two-word phrases
-    for adj in adjectives:
-        for noun in nouns:
-            phrases.append(adj + noun)
-            phrases.append(noun + adj)
-    for verb in verbs:
-        for noun in nouns:
-            phrases.append(verb + noun)
+    for lists in [(adjectives, nouns), (nouns, adjectives), (verbs, nouns), (colors, nouns), (nouns, foods)]:
+        for w1 in lists[0]:
+            for w2 in lists[1]:
+                phrases.append(w1 + w2)
     
-    # Three-word phrases
     for adj in adjectives:
         for verb in verbs:
             for noun in nouns:
                 phrases.append(f"i{verb}{noun}")
                 phrases.append(f"{adj}{noun}{verb}")
     
-    # "my" and "the" phrases
-    for noun in nouns:
+    for noun in nouns + foods:
         phrases.append(f"my{noun}")
         phrases.append(f"the{noun}")
     
-    # Pad with variations
     i = 0
     while len(phrases) < 1000:
-        phrases.append(f"{random.choice(adjectives)}{random.choice(nouns)}{i}")
+        phrases.append(f"{random.choice(adjectives + colors)}{random.choice(nouns + foods)}{i}")
         i += 1
     
-    # Ensure uniqueness and return exactly 1000
     phrases = list(set(phrases))[:1000]
     random.shuffle(phrases)
     return phrases
 
-def generate_number_patterns():
+def generate_number_patterns(custom_pattern=None):
     number_patterns = []
     
-    # Random digit sequences (2-4 digits)
-    for length in range(2, 5):
-        for _ in range(200):
-            pattern = ''.join(random.choice(string.digits) for _ in range(length))
-            number_patterns.append(pattern)
+    if custom_pattern:
+        if custom_pattern == "YYYY":
+            for year in range(1900, 2100):
+                number_patterns.append(str(year))
+        elif custom_pattern == "MMDD":
+            for month in range(1, 13):
+                for day in range(1, 32):
+                    number_patterns.append(f"{month:02d}{day:02d}")
+        elif custom_pattern == "MMYYYY":
+            for month in range(1, 13):
+                for year in range(0, 100):
+                    number_patterns.append(f"{month:02d}{year:02d}")
     
-    # Four-digit years (1900-2025)
-    for year in range(1900, 2026):
-        number_patterns.append(str(year))
-    
-    # Repeated two-digit numbers
-    for num in range(10, 100):
-        number_patterns.append(str(num) * 2)
-    
-    # Repeated single digits
-    for digit in range(1, 10):
+    if len(number_patterns) < 1000:
         for length in range(2, 5):
-            number_patterns.append(str(digit) * length)
+            for _ in range(200):
+                pattern = ''.join(random.choice(string.digits) for _ in range(length))
+                number_patterns.append(pattern)
+        
+        for year in range(1900, 2026):
+            number_patterns.append(str(year))
+        
+        for num in range(10, 100):
+            number_patterns.append(str(num) * 2)
+        
+        for digit in range(1, 10):
+            for length in range(2, 5):
+                number_patterns.append(str(digit) * length)
+        
+        for start in range(0, 8):
+            for length in range(2, 5):
+                seq = ''.join(str((start + i) % 10) for i in range(length))
+                number_patterns.append(seq)
+        
+        for month in range(1, 13):
+            for year in range(0, 100):
+                number_patterns.append(f"{month:02d}{year:02d}")
     
-    # Incremental sequences
-    for start in range(0, 8):
-        for length in range(2, 5):
-            seq = ''.join(str((start + i) % 10) for i in range(length))
-            number_patterns.append(seq)
-    
-    # Pad with random 3-5 digit numbers
-    while len(number_patterns) < 1000:
-        length = random.randint(3, 5)
-        pattern = ''.join(random.choice(string.digits) for _ in range(length))
-        number_patterns.append(pattern)
-    
-    # Ensure uniqueness and return exactly 1000
     number_patterns = list(set(number_patterns))[:1000]
     random.shuffle(number_patterns)
     return number_patterns
 
-def generate_all_passwords(single_words, phrases, number_patterns, min_length=8, include_number=True, include_special=True):
-    passwords = []
-    special_chars = list(string.punctuation)
+def check_password_strength(password):
+    length = len(password)
+    has_upper = any(c.isupper() for c in password)
+    has_lower = any(c.islower() for c in password)
+    has_digit = any(c.isdigit() for c in password)
+    has_special = any(c in string.punctuation for c in password)
     
-    # Combine words and phrases
+    char_set_size = 0
+    if has_lower:
+        char_set_size += 26
+    if has_upper:
+        char_set_size += 26
+    if has_digit:
+        char_set_size += 10
+    if has_special:
+        char_set_size += 32
+    entropy = length * log2(char_set_size) if char_set_size > 0 else 0
+    
+    if length < 8 or entropy < 30:
+        return "weak"
+    elif length >= 12 and entropy >= 50 and has_upper and has_lower and has_digit and has_special:
+        return "strong"
+    else:
+        return "medium"
+
+def generate_passwords(single_words, phrases, number_patterns, num_passwords, min_length=8, include_number=True, include_special=True, passphrase_mode=False, high_security_mode=False, strength_filter="All", progress_callback=None):
+    passwords = set()
+    special_chars = list(string.punctuation)
     text_list = single_words + phrases
     
-    # Generate all combinations
-    for text, number in itertools.product(text_list, number_patterns):
-        # Non-capitalized, no special character
-        pwd = text
-        if include_number:
-            pwd += number
-        if len(pwd) >= min_length:
-            passwords.append(pwd)
-        
-        # Non-capitalized, with special character
-        if include_special:
-            for char in special_chars:
-                pwd_special = text + number + char
-                if len(pwd_special) >= min_length:
-                    passwords.append(pwd_special)
-        
-        # Capitalized, no special character
-        pwd_cap = text.capitalize()
-        if include_number:
-            pwd_cap += number
-        if len(pwd_cap) >= min_length:
-            passwords.append(pwd_cap)
-        
-        # Capitalized, with special character
-        if include_special:
-            for char in special_chars:
-                pwd_cap_special = text.capitalize() + number + char
-                if len(pwd_cap_special) >= min_length:
-                    passwords.append(pwd_cap_special)
+    if high_security_mode:
+        total_combinations = num_passwords
+    elif passphrase_mode:
+        total_combinations = len(single_words)
+    else:
+        total_combinations = len(text_list) * len(number_patterns)
     
-    # Ensure minimum length (pad with lowercase letters if needed)
+    num_passwords = min(num_passwords, total_combinations * 2 * (1 + (len(special_chars) if include_special else 0)))
+    
+    if high_security_mode:
+        count = 0
+        while len(passwords) < num_passwords:
+            length = random.randint(12, 16)
+            chars = string.ascii_letters + string.digits + string.punctuation
+            pwd = ''.join(random.choice(chars) for _ in range(length))
+            strength = check_password_strength(pwd)
+            if strength_filter == "All" or (strength_filter == "Medium+" and strength in ["medium", "strong"]) or (strength_filter == "Strong Only" and strength == "strong"):
+                passwords.add((pwd, strength))
+            count += 1
+            if progress_callback:
+                progress_callback(count / num_passwords * 100)
+    
+    elif passphrase_mode:
+        count = 0
+        while len(passwords) < num_passwords:
+            num_words = random.randint(2, 4)
+            words = [random.choice(single_words) for _ in range(num_words)]
+            text = ' '.join(words)
+            if random.choice([True, False]):
+                text = text.title()
+            
+            pwd = text
+            if include_number:
+                pwd += random.choice(number_patterns)
+            if len(pwd) >= min_length:
+                strength = check_password_strength(pwd)
+                if strength_filter == "All" or (strength_filter == "Medium+" and strength in ["medium", "strong"]) or (strength_filter == "Strong Only" and strength == "strong"):
+                    passwords.add((pwd, strength))
+            
+            if include_special and random.choice([True, False]):
+                pwd_special = pwd + random.choice(special_chars)
+                if len(pwd_special) >= min_length:
+                    strength = check_password_strength(pwd_special)
+                    if strength_filter == "All" or (strength_filter == "Medium+" and strength in ["medium", "strong"]) or (strength_filter == "Strong Only" and strength == "strong"):
+                        passwords.add((pwd_special, strength))
+            
+            count += 1
+            if progress_callback:
+                progress_callback(count / (num_passwords / 2) * 100)
+    
+    else:
+        combinations = list(itertools.product(text_list, number_patterns))
+        random.shuffle(combinations)
+        
+        count = 0
+        for text, number in combinations:
+            pwd = text
+            if include_number:
+                pwd += number
+            if len(pwd) >= min_length:
+                strength = check_password_strength(pwd)
+                if strength_filter == "All" or (strength_filter == "Medium+" and strength in ["medium", "strong"]) or (strength_filter == "Strong Only" and strength == "strong"):
+                    passwords.add((pwd, strength))
+            
+            if include_special:
+                for char in special_chars:
+                    pwd_special = text + number + char
+                    if len(pwd_special) >= min_length:
+                        strength = check_password_strength(pwd_special)
+                        if strength_filter == "All" or (strength_filter == "Medium+" and strength in ["medium", "strong"]) or (strength_filter == "Strong Only" and strength == "strong"):
+                            passwords.add((pwd_special, strength))
+            
+            pwd_cap = text.capitalize()
+            if include_number:
+                pwd_cap += number
+            if len(pwd_cap) >= min_length:
+                strength = check_password_strength(pwd_cap)
+                if strength_filter == "All" or (strength_filter == "Medium+" and strength in ["medium", "strong"]) or (strength_filter == "Strong Only" and strength == "strong"):
+                    passwords.add((pwd_cap, strength))
+            
+            if include_special:
+                for char in special_chars:
+                    pwd_cap_special = text.capitalize() + number + char
+                    if len(pwd_cap_special) >= min_length:
+                        strength = check_password_strength(pwd_cap_special)
+                        if strength_filter == "All" or (strength_filter == "Medium+" and strength in ["medium", "strong"]) or (strength_filter == "Strong Only" and strength == "strong"):
+                            passwords.add((pwd_cap_special, strength))
+            
+            count += 1
+            if progress_callback:
+                progress_callback(count / (num_passwords / 66) * 100)
+            
+            if len(passwords) >= num_passwords:
+                break
+    
     final_passwords = []
-    for pwd in passwords:
+    for pwd, strength in passwords:
         while len(pwd) < min_length:
             pwd += random.choice(string.ascii_lowercase)
-        final_passwords.append(pwd)
+        final_passwords.append((pwd, strength))
     
-    return final_passwords
+    return final_passwords[:num_passwords]
 
-def save_passwords_to_file(passwords, filename="passwords.txt"):
+def save_passwords_to_file(passwords, filename="passwords.txt", file_format="txt", append_mode=False, zip_output=False):
+    mode = 'a' if append_mode else 'w'
     try:
-        with open(filename, 'w', encoding='utf-8') as file:
-            for password in passwords:
-                file.write(password + '\n')
-        return f"Passwords saved to {filename} ({len(passwords)} passwords)"
+        if zip_output:
+            zip_filename = filename + '.zip'
+            with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zf:
+                with zf.open(filename, mode) as f:
+                    if file_format == "txt":
+                        for password, strength in passwords:
+                            f.write(f"{password} ({strength})\n".encode('utf-8'))
+                    elif file_format == "csv":
+                        writer = csv.writer(f.decode('utf-8').splitlines(), lineterminator='\n')
+                        for password, strength in passwords:
+                            writer.writerow([password, strength])
+                    elif file_format == "json":
+                        json.dump([{"password": p, "strength": s} for p, s in passwords], f)
+            return f"Passwords saved to {zip_filename} ({len(passwords)} passwords)"
+        else:
+            with open(filename, mode, encoding='utf-8') as f:
+                if file_format == "txt":
+                    for password, strength in passwords:
+                        f.write(f"{password} ({strength})\n")
+                elif file_format == "csv":
+                    writer = csv.writer(f)
+                    writer.writerow(["Password", "Strength"])
+                    for password, strength in passwords:
+                        writer.writerow([password, strength])
+                elif file_format == "json":
+                    json.dump([{"password": p, "strength": s} for p, s in passwords], f)
+            return f"Passwords saved to {filename} ({len(passwords)} passwords)"
     except Exception as e:
         return f"Error saving to file: {str(e)}"
+
+class PasswordGeneratorGUI:
+    def __init__(self, root, single_words, phrases, number_patterns):
+        self.root = root
+        self.root.title("Password Generator")
+        self.single_words = single_words
+        self.phrases = phrases
+        self.number_patterns = number_patterns
+        self.is_generating = False
+        self.custom_word_file = None
+        self.custom_phrase_file = None
+        
+        # GUI elements
+        self.num_label = tk.Label(root, text="Number of passwords:")
+        self.num_label.pack(pady=5)
+        self.num_entry = tk.Entry(root, width=20)
+        self.num_entry.pack(pady=5)
+        self.num_entry.insert(0, "10000")
+        
+        self.min_length_label = tk.Label(root, text="Minimum length:")
+        self.min_length_label.pack(pady=5)
+        self.min_length_entry = tk.Entry(root, width=20)
+        self.min_length_entry.pack(pady=5)
+        self.min_length_entry.insert(0, "8")
+        
+        self.include_number_var = tk.BooleanVar(value=True)
+        self.include_number_check = tk.Checkbutton(root, text="Include numbers", variable=self.include_number_var)
+        self.include_number_check.pack(pady=5)
+        
+        self.include_special_var = tk.BooleanVar(value=True)
+        self.include_special_check = tk.Checkbutton(root, text="Include special characters", variable=self.include_special_var)
+        self.include_special_check.pack(pady=5)
+        
+        self.passphrase_var = tk.BooleanVar()
+        self.passphrase_check = tk.Checkbutton(root, text="Generate passphrases", variable=self.passphrase_var)
+        self.passphrase_check.pack(pady=5)
+        
+        self.high_security_var = tk.BooleanVar()
+        self.high_security_check = tk.Checkbutton(root, text="High-security random passwords", variable=self.high_security_var)
+        self.high_security_check.pack(pady=5)
+        
+        self.strength_label = tk.Label(root, text="Strength filter:")
+        self.strength_label.pack(pady=5)
+        self.strength_var = tk.StringVar(value="All")
+        self.strength_menu = ttk.Combobox(root, textvariable=self.strength_var, values=["All", "Medium+", "Strong Only"])
+        self.strength_menu.pack(pady=5)
+        
+        self.pattern_label = tk.Label(root, text="Number pattern (e.g., YYYY, MMDD, MMYYYY):")
+        self.pattern_label.pack(pady=5)
+        self.pattern_entry = tk.Entry(root, width=20)
+        self.pattern_entry.pack(pady=5)
+        
+        self.word_file_button = tk.Button(root, text="Upload custom word list", command=self.upload_word_file)
+        self.word_file_button.pack(pady=5)
+        
+        self.phrase_file_button = tk.Button(root, text="Upload custom phrase list", command=self.upload_phrase_file)
+        self.phrase_file_button.pack(pady=5)
+        
+        self.format_label = tk.Label(root, text="Output format:")
+        self.format_label.pack(pady=5)
+        self.format_var = tk.StringVar(value="txt")
+        self.format_menu = ttk.Combobox(root, textvariable=self.format_var, values=["txt", "csv", "json"])
+        self.format_menu.pack(pady=5)
+        
+        self.zip_var = tk.BooleanVar()
+        self.zip_check = tk.Checkbutton(root, text="Save as ZIP", variable=self.zip_var)
+        self.zip_check.pack(pady=5)
+        
+        self.append_var = tk.BooleanVar()
+        self.append_check = tk.Checkbutton(root, text="Append to existing file", variable=self.append_var)
+        self.append_check.pack(pady=5)
+        
+        self.progress = ttk.Progressbar(root, length=200, mode='determinate')
+        self.progress.pack(pady=10)
+        
+        self.generate_button = tk.Button(root, text="Generate Passwords", command=self.start_generation)
+        self.generate_button.pack(pady=5)
+        
+        self.copy_button = tk.Button(root, text="Copy Selected Password", command=self.copy_password, state='disabled')
+        self.copy_button.pack(pady=5)
+        
+        self.status_label = tk.Label(root, text="")
+        self.status_label.pack(pady=10)
+        
+        self.preview_label = tk.Label(root, text="Preview (first 10 passwords):")
+        self.preview_label.pack(pady=5)
+        
+        self.preview_text = tk.Text(root, height=10, width=50)
+        self.preview_text.pack(pady=5)
+        self.preview_text.config(state='disabled')
+    
+    def upload_word_file(self):
+        file = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+        if file:
+            self.custom_word_file = file
+            self.status_label.config(text=f"Word file selected: {os.path.basename(file)}")
+    
+    def upload_phrase_file(self):
+        file = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+        if file:
+            self.custom_phrase_file = file
+            self.status_label.config(text=f"Phrase file selected: {os.path.basename(file)}")
+    
+    def update_progress(self, value):
+        self.progress['value'] = value
+        self.root.update()
+    
+    def update_preview(self, passwords):
+        self.preview_text.config(state='normal')
+        self.preview_text.delete(1.0, tk.END)
+        for pwd, strength in passwords[:10]:
+            self.preview_text.insert(tk.END, f"{pwd} ({strength})\n")
+        self.preview_text.config(state='disabled')
+        self.copy_button.config(state='normal')
+    
+    def copy_password(self):
+        try:
+            selected = self.preview_text.get(tk.SEL_FIRST, tk.SEL_LAST).split(' (')[0]
+            pyperclip.copy(selected)
+            self.status_label.config(text="Password copied to clipboard")
+        except:
+            messagebox.showerror("Error", "Please select a password to copy.")
+    
+    def start_generation(self):
+        if self.is_generating:
+            messagebox.showwarning("Warning", "Generation in progress. Please wait.")
+            return
+        
+        try:
+            num_passwords = int(self.num_entry.get())
+            min_length = int(self.min_length_entry.get())
+            if num_passwords <= 0 or min_length <= 0:
+                messagebox.showerror("Error", "Please enter positive numbers.")
+                return
+            if num_passwords > 8000000:
+                messagebox.showwarning("Warning", "Number capped at 8,000,000.")
+                num_passwords = 8000000
+            if min_length > 50:
+                messagebox.showwarning("Warning", "Minimum length capped at 50.")
+                min_length = 50
+            
+            self.is_generating = True
+            self.generate_button.config(state='disabled')
+            self.copy_button.config(state='disabled')
+            self.status_label.config(text="Generating passwords...")
+            self.progress['value'] = 0
+            self.preview_text.config(state='normal')
+            self.preview_text.delete(1.0, tk.END)
+            self.preview_text.config(state='disabled')
+            
+            # Reload word/phrase lists if custom files are provided
+            single_words = generate_single_words(self.custom_word_file)
+            phrases = generate_phrases(self.custom_phrase_file)
+            number_patterns = generate_number_patterns(self.pattern_entry.get() or None)
+            
+            def generation_thread():
+                passwords = generate_passwords(
+                    single_words,
+                    phrases,
+                    number_patterns,
+                    num_passwords,
+                    min_length=min_length,
+                    include_number=self.include_number_var.get(),
+                    include_special=self.include_special_var.get(),
+                    passphrase_mode=self.passphrase_var.get(),
+                    high_security_mode=self.high_security_var.get(),
+                    strength_filter=self.strength_var.get(),
+                    progress_callback=self.update_progress
+                )
+                
+                filename = "passwords." + self.format_var.get()
+                result = save_passwords_to_file(
+                    passwords,
+                    filename=filename,
+                    file_format=self.format_var.get(),
+                    append_mode=self.append_var.get(),
+                    zip_output=self.zip_var.get()
+                )
+                
+                self.root.after(0, lambda: self.finish_generation(result, passwords))
+            
+            threading.Thread(target=generation_thread, daemon=True).start()
+        
+        except ValueError:
+            messagebox.showerror("Error", "Please enter valid numbers.")
+    
+    def finish_generation(self, result, passwords):
+        self.status_label.config(text=result)
+        self.update_preview(passwords)
+        self.generate_button.config(state='normal')
+        self.is_generating = False
+        self.progress['value'] = 100
+        messagebox.showinfo("Success", result)
 
 # Main execution
 if __name__ == "__main__":
@@ -212,23 +543,7 @@ if __name__ == "__main__":
     print(f"Generated {len(phrases)} phrases")
     print(f"Generated {len(number_patterns)} number patterns")
     
-    print("\nGenerating all possible passwords (this may take a few minutes)...")
-    passwords = generate_all_passwords(
-        single_words, 
-        phrases, 
-        number_patterns, 
-        min_length=8, 
-        include_number=True, 
-        include_special=True
-    )
-    
-    print(f"\nGenerated {len(passwords)} passwords")
-    
-    # Print first 10 passwords for verification
-    print("\nFirst 10 Passwords (sample):")
-    for pwd in passwords[:10]:
-        print(pwd)
-    
-    # Save all passwords to a text file
-    result = save_passwords_to_file(passwords)
-    print(f"\n{result}")
+    root = tk.Tk()
+    app = PasswordGeneratorGUI(root, single_words, phrases, number_patterns)
+    root.geometry("400x600")
+    root.mainloop()
