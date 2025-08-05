@@ -9,7 +9,6 @@ import threading
 import json
 import csv
 import zipfile
-import pyperclip
 
 def generate_single_words(custom_file=None):
     if custom_file:
@@ -318,6 +317,7 @@ def save_passwords_to_file(passwords, filename="passwords.txt", file_format="txt
                             f.write(f"{password} ({strength})\n".encode('utf-8'))
                     elif file_format == "csv":
                         writer = csv.writer(f.decode('utf-8').splitlines(), lineterminator='\n')
+                        writer.writerow(["Password", "Strength"])
                         for password, strength in passwords:
                             writer.writerow([password, strength])
                     elif file_format == "json":
@@ -350,7 +350,6 @@ class PasswordGeneratorGUI:
         self.custom_word_file = None
         self.custom_phrase_file = None
         
-        # GUI elements
         self.num_label = tk.Label(root, text="Number of passwords:")
         self.num_label.pack(pady=5)
         self.num_entry = tk.Entry(root, width=20)
@@ -416,7 +415,7 @@ class PasswordGeneratorGUI:
         self.generate_button = tk.Button(root, text="Generate Passwords", command=self.start_generation)
         self.generate_button.pack(pady=5)
         
-        self.copy_button = tk.Button(root, text="Copy Selected Password", command=self.copy_password, state='disabled')
+        self.copy_button = tk.Button(root, text="Copy Selected Password", command=self.copy_password, state='normal')
         self.copy_button.pack(pady=5)
         
         self.status_label = tk.Label(root, text="")
@@ -456,7 +455,9 @@ class PasswordGeneratorGUI:
     def copy_password(self):
         try:
             selected = self.preview_text.get(tk.SEL_FIRST, tk.SEL_LAST).split(' (')[0]
-            pyperclip.copy(selected)
+            self.root.clipboard_clear()
+            self.root.clipboard_append(selected)
+            self.root.update()  # Ensure clipboard update is processed
             self.status_label.config(text="Password copied to clipboard")
         except:
             messagebox.showerror("Error", "Please select a password to copy.")
@@ -488,7 +489,6 @@ class PasswordGeneratorGUI:
             self.preview_text.delete(1.0, tk.END)
             self.preview_text.config(state='disabled')
             
-            # Reload word/phrase lists if custom files are provided
             single_words = generate_single_words(self.custom_word_file)
             phrases = generate_phrases(self.custom_phrase_file)
             number_patterns = generate_number_patterns(self.pattern_entry.get() or None)
